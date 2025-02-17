@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <title>Termómetro del Amor - Webinar con Vue</title>
+  </head>
+  <body>
+    <div id="app">
+        <h1 class="title">Termómetro del Amor</h1>
+        <p class="instructions">
+            Ingresa tu nombre y el de tu pareja para poder ver la compatibilidad entre ustedes!
+        </p>
+      <div class="container">
+        <div class="names-container">
+          <label>
+            <span>Nombre 1:</span>
+            <input type="text" v-model="nombre1" />
+          </label>
+          <label>
+            <span>Nombre 2:</span>
+            <input type="text" v-model="nombre2" />
+          </label>
+          <div>
+              <p>{{mensaje}} <span v-html="emoji" v-if="emoji"></span></p>
+          </div>
+        </div>
+        <div class="termometer-container">
+          <div class="termometer" :style="{height: `${compatibilidad}%`, backgroundColor: color}">
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      const { createApp, ref, computed, watch } = Vue;
+
+      createApp({
+        setup() {
+          const nombre1 = ref("");
+          const nombre2 = ref("");
+            const mensaje = ref("");
+            const color = ref("gray");
+            const emoji = ref("")
+          /*
+                    La compatibildad será un número entre 0 y 100
+                    cada vocal de los nombres tiene un valor de 10
+                    cada consonantes de los nombres tiene un valor de 4
+                */
+          const compatibilidad = computed(() => {
+            if (!nombre1.value || !nombre2.value) return 0;
+
+            const vocales = "aeiouAEIOU";
+            const contarLetras = (nombre) => {
+              let vocalesCount = 0;
+              let consonantesCount = 0;
+
+              for (let letra of nombre) {
+                if (vocales.includes(letra)) {
+                  vocalesCount++;
+                } else {
+                  consonantesCount++;
+                }
+              }
+              return { vocalesCount, consonantesCount };
+            };
+
+            const datos1 = contarLetras(nombre1.value);
+            const datos2 = contarLetras(nombre2.value);
+
+            let compat =
+              (datos1.vocalesCount + datos2.vocalesCount) * 10 +
+              (datos1.consonantesCount + datos2.consonantesCount) * 4;
+            
+            return Math.min(100, compat)
+          });
+
+          watch(compatibilidad, (newValue) => {
+            if (newValue < 30) {
+                mensaje.value = "Amistad pura, nada más...";
+                color.value = "blue"
+            } else if (newValue < 60) {
+                mensaje.value = "Hay Química, pero falta trabajo."
+                emoji.value = "&#128516"
+                color.value = "yellow"
+            } else if (newValue < 90) {
+                mensaje.value = "Gran conexión, sigan adelante!"
+                emoji.value = "&#128525"
+                color.value = "orange"
+            } else {
+                mensaje.value = "Almas gemelas";
+                emoji.value = "&#128151"
+                color.value = "red"
+            }
+          })
+
+          return {
+            nombre1,
+            nombre2,
+            compatibilidad,
+            mensaje,
+            color,
+            emoji
+          };
+        },
+      }).mount("#app");
+    </script>
+    <style>
+        #app {
+            max-width: 500;
+            border: thick dotted red;
+            border-radius: 10px;
+            padding: 0.75rem;
+        }
+        .title, .instructions{
+            text-align: center;
+        }
+        .title{
+            font-size: 2rem;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+        }
+        .instructions{
+            font-size: 1.2rem;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 1rem;
+            max-width: 300px;
+            margin: 1rem auto;
+        }
+        .names-container {
+            display: flex;
+            flex-flow: column nowrap;
+            gap: 1rem;
+            margin: 1rem auto;
+        }
+        .names-container > label > span {
+            margin-right: 0.25rem;
+        }
+        .termometer-container {
+            height: 200px;
+            width: 20px;
+            border: thin solid gray;
+            border-radius: 5px;
+            box-shadow: 2px 1px 0px 1px rgba(120, 120, 120, 0.7);
+            display: flex;
+            justify-content: start;
+            align-items: flex-end;
+        }
+        .termometer {
+            width: 100%;
+            transition: all 200ms ease-in;
+        }
+    </style>
+  </body>
+</html>
